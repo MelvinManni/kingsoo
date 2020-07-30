@@ -33,6 +33,11 @@ connection.once("open", () => {
 const userRoute = require("./routes/user");
 app.use("/user", userRoute);
 
+// IMPORTING ROUTE FOR CLIENT
+
+const clientRouter = require("./routes/client");
+app.use("/client", clientRouter);
+
 // SETTING UP SERVER
 app.listen(port, () => {
   console.log("Server is runnng on port " + port);

@@ -3,10 +3,11 @@ import Input from "./input";
 import Button from "./button";
 import { Link } from "@reach/router";
 import ButtonOutline from "./buttonOutLine";
+import axios from "axios";
 
 function LoginForm() {
   const [user, setUser] = useState({
-    userName: "",
+    username: "",
     password: "",
   });
 
@@ -17,18 +18,33 @@ function LoginForm() {
       ...user,
       [e.currentTarget.name]: e.currentTarget.value,
     });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:5500/user/", user, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => console.log(response))
+      .catch((error) => {
+        console.log(error.msg);
+      });
+  };
+
   return (
     <React.Fragment>
       <div className="logo text-center my-5">
         <h2>[LOGO]</h2>
       </div>
-      <form id="logInForm" className="signUpForm">
+      <form onSubmit={handleSubmit} id="logInForm" className="signUpForm">
         <div className="form-group">
           <Input
             type={"text"}
             placeholder={"Username"}
-            value={user.userName}
-            name={"userName"}
+            value={user.username}
+            name={"username"}
             onChange={handleChange}
           />
         </div>

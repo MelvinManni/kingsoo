@@ -1,14 +1,38 @@
+require("dotenv").config();
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 let User = require("./../modules/user.model.js");
 
 // GET ALL USERS
-
 router.route("/").post((req, res) => {
-  User.findOne()
-    .then((users) => res.json(users))
-    .catch((err) => res.status(400).json("ERROR: " + err.message));
+
+  const { username, password } = req.body;
+  User.findOne({ username }).then((user) => {
+    if (!user) return res.status(400).json({ msg: "User does not exist" });
+
+    // VALIDATE AND DECRYPT PASSWORD
+
+    bcrypt.compare(password, user.password).then((match) => {
+      if (!match) return res.status(400).json({ msg: "Incorrect password" });
+      jwt.sign(
+        { id: user.id },
+        process.env.USER_JWT,
+        { expiresIn: 36000 },
+        (err, token) => {
+          if (err) throw err;
+          res.json({
+            token,
+            user: {
+              id: user.id,
+              name: user.firstName,
+              email: user.email,
+            },
+          });
+        }
+      );
+    });
+  });
 });
 
 // ADD USER
@@ -18,7 +42,7 @@ router.route("/add").post((req, res) => {
   User.findOne({ email }).then((mail) => {
     if (mail) return res.status(400).json("User with email already exists");
     User.findOne({ username }).then((user) => {
-      if (mail)
+      if (user)
         return res.status(400).json("User with Username already exists");
       const newUser = new User({
         username,
@@ -35,14 +59,22 @@ router.route("/add").post((req, res) => {
           newUser.password = hash;
           newUser
             .save()
-            .then((users) => {
+            .then((user) => {
+              console.log(user);
               jwt.sign(
                 { id: user.id },
                 process.env.USER_JWT,
                 { expiresIn: 36000 },
                 (err, token) => {
                   if (err) throw err;
-                  res.json(token);
+                  res.json({
+                    token,
+                    user: {
+                      id: user.id,
+                      name: user.firstName,
+                      email: user.email,
+                    },
+                  });
                 }
               );
             })

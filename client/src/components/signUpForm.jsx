@@ -30,7 +30,7 @@ function SignUpForm() {
       .post("http://localhost:5500/user/add", createUser)
       .then((response) => console.log(response))
       .catch((error) => {
-        console.log("Error: " + error.message);
+        console.log(error.message);
       });
   };
 
